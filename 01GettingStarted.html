@@ -138,4 +138,73 @@ ghci> 2*(-3)
 他の言語と比べて、この負数の独特な取扱いに悩まされるが、これは理由のある取引である。Haskellはいつでも新しい演算子を許容する。これは難解な言語機能というほどでもない:この先の章では相当量のユーザ定義演算子を見るだろう。言語設計者はこの表現力と引き換えに負数のやや面倒な文法を受け入れようと決めた。
 
 <h2>Boolean Logic, Operators, and Value Comparisons</h2>
+Haskellでのブール論理式の値は「True」と「False」である。名前が大文字から始まることは重要である。この言語はCに影響されて、ブール値を扱うのにCに影響された演算子を用いる:(&&)は論理的な「and」(論理積)、(||)は論理的な「or」(論理和):
+
+<pre>
+ghci> True && False
+False
+ghci> False || True
+True
+</pre>
+
+数字0をFalseの別名として扱うプログラム言語がある一方、Haskellはそうせず、非0の値をTrueと考えることもない:
+
+<pre>
+ghci> True && 1
+
+<interactive>:1:8:
+    No instance for (Num Bool)
+      arising from the literal `1' at <interactive>:1:8
+    Possible fix: add an instance declaration for (Num Bool)
+    In the second argument of `(&&)', namely `1'
+    In the expression: True && 1
+    In an definition of `it': it = True && 1
+</pre>
+
+もう一度、我々は重要そうなエラーメッセージに遭遇している。要するに、boolean型、Bool、は数字型、Numの仲間ではない。エラーメッセージはやや長いが、これはghciが問題の場所を示し、修正できる可能性のある点を示しているからだ。
+もっと詳細にエラーメッセージを分析しよう:
+
+No instance for (Num Bool)
+
+ghciが数値1をBool型として扱おうとしていると言っているが、不能
+
+arising from the literal '1'
+
+数値1を使ったために問題が起きたと表示している
+
+In the definition of 'it'
+
+ghciのショートカットを参照している。これは数ページ先に再度触れる。
+
+<h2>Remain fearless in the face of error messages</h2>
+
+ここで重要な点、すなわち本書の最初の章全体を繰り返す点に至った。もしもあなたが未だ理解できない問題やエラーメッセージに陥っても、「パニクるな」。最初にすべきことは問題点において、進歩できるほどの十分な理解をすることだ。経験を積めば、最初は難解に見えたエラーメッセージの箇所を理解し易くなっているのに気づくだろう。
+多くのエラーメッセージには目的がある:それは実際に、プログラムを動かす前にさえ、いくらかのデバッグの前衛となることで正しいコードを書く助けになる。もしより放任的な言語で仕事をした背景があるのなら、なにかしらショックかもしれない。一緒に頑張ろう。
+Haskellの比較演算子の多くはCやその影響を受けた言語のものと似ている。
+
+<pre>
+ghci> 1 == 1
+True
+ghci> 2 < 3
+True
+ghci> 4 >= 3.99
+True
+</pre>
+
+Cのものと一つ違う演算子は「等しくない」だ。Cでは != と書くが、Haskellでは (/=) と書く、これは数学での≠記号に似ている。
+
+<pre>
+ghci> 2 /= 3
+True
+</pre>
+
+同じくC風の言語はよく ! を論理的否定に用いるが、Haskellは not 関数を用いる:
+
+<pre>
+ghci> not True
+False
+</pre>
+
+
+
 
