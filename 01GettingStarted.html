@@ -205,6 +205,89 @@ ghci> not True
 False
 </pre>
 
+<h2>Operator Precedence and Associativity</h2>
 
+数式やその他の挿入演算子を用いるプログラム言語の様に、Haskellは演算子優先度の概念を持っている。我々は表現の部分を明示的にグループ化するためにカッコを用いるが、優先度によりいくつかのカッコを省くことができる。例えば乗算演算子は加算演算子よりも高い優先度を持ち、そのためHaskellは次の2つの表現を等しく扱う:
+
+<pre>
+ghci> 1 + (4 * 4)
+17
+ghci> 1 + 4 * 4
+17
+</pre>
+
+Haskellは演算子に、1が最低で9が最高の、優先度数値を割り当てている。より高い優先度の演算子はより低いのよりも前に適用される。個々の演算子の優先順位をしらべるのにghciを使うことができる、ghciの:infoコマンドを使うのだ:
+
+ghci> info (+)
+class (Eq a, Show a) => Num a where
+  (+) :: a -> a -> a
+  ...
+      	-- Defined in GHC.Num
+infixl 6 +
+ghci> :info (*)
+class (Eq a, Show a) => Num a where
+  ...
+  (*) :: a -> a -> a
+  ...
+      	-- Defined in GHC.Num
+infixl 7 *
+</pre>
+
+我々が求める情報は「infixl 6 +」の行にあり、それは(+)演算子が優先度6であると示している。(その他の出力については後の章で説明する) infixl 7 * は(*)演算子が優先度7であると示す。(*)は(+)よりも優先度が高いため、なぜ 1 + 4 * 4 が 1 + (4 * 4) と同じように評価され、(1 + 4) * 4 とはならないのかが理解される。
+Haskellはまた演算子の結合則を定義する。これにより複数の演算子を含むある表現が左から評価されるか、右からかを定める。(+)と(*)演算子は左結合である、これは先のghciの出力でinfixlと表されている。右結合の演算子はinfixrと表される。
+
+<pre>
+ghci> :info (^)
+(^) :: (Num a, Integral b) => a -> b -> a 	-- Defined in GHC.Real
+infixr 8 ^
+</pre>
+
+優先度と結合則の組み合わせは通常「fixityルール」として参照される。
+
+＜h2>Undefined Values, and Introducing Variables</h2>
+
+Haskellの、先に触れた標準ライブラリであるPreludeは少なくとも一つのよく知られた数学的定数を提供する:
+
+<pre>
+ghci> pi
+3.141592653589793
+</pre>
+
+しかしその数学的定数の網羅範囲は、簡単に分かるが、広くはない。オイラー数、eを見てみよう:
+
+<pre>
+ghci> e
+
+<interactive>:1:0: Not in scope: `e'
+</pre>
+
+しかたない。自分で定義しなければいけない。
+
+<h2>Don't worry about the error message</h2>
+もし「not in scope」エラーメッセージに少しめげても、心配は無い。それが意味するのはeという名前で定義された変数は無いということだけだ。
+
+ghciのlet構成を使って、自分で一時的なeの定義をすることができる:
+
+<pre>
+ghci> let e = exp 1
+</pre>
+
+これは指数関数、expの利用であり、Haskellでの関数の最初の利用例である。Pythonのような言語は関数の引数の回りにはカッコを要するが、Haskellはそうではない。
+eを定義して、いまや我々は数学的表現中でそれを使える様になった。先に導入した(^)べき乗演算子はある数を整数乗にべき乗するものである。浮動点数を指数として使うためには、(**)べき乗演算子を用いる:
+
+<pre>
+ghci> (e ** pi) - pi
+19.99909997918947
+</pre>
+
+<h3>This syntax is ghci-specific</h3>
+ghciの受け入れるlet文法は通常のHaskellプログラムの「トップレベル」で用いるものとは異なっている。通常の文法は「introducing Local Variables」で見る
+
+<h2>Dealing with Precedence and Associativity Rules</h2>
+Haskellがカッコを省くことを許しても、少なくともいくつかのカッコを残しておく方が良いときがある。それがあることで将来それを読むもの(我々自身を含む)が意図を理解する助けになる。
+更に重要なことに、演算子の優先度に完全に依存した複雑な表現はまぎれもなくバグの源である。コンパイラと人間は、短い、カッコの無い表現がしようとしていることさえも違った理解をしてしまうことがよくある。
+全ての優先度と結合則を覚える必要は無い:わからなければカッコを付け加える方が簡単だ。
+
+<h2>Command-Line Editing in ghci</h2>
 
 
