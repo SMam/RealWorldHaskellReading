@@ -290,4 +290,236 @@ Haskellがカッコを省くことを許しても、少なくともいくつか�
 
 <h2>Command-Line Editing in ghci</h2>
 
+多くのシステムでは、ghciはいくつかのコマンドライン編集機能を持つ。コマンドライン編集をよく知らないなら、大いに時間が節約できる。基本はUnix的あるいはWindowsのシステムに共通である。上矢印キーを押すと最後に入力した行が呼ばれる;繰り返して押すと前に遡って繰り返す。左向き矢印と右向き矢印キーを使って入力行の中を動くことができる。Unixでは(残念ながらWindowsではだめだが)タブキーで部分的に入力した識別子を補完できる。
+
+<h3>Where to look for more infomation</h3>
+ここではコマンドライン行編集の表面もかすっていない。もしももっとコマンド行編集になれればより効率的に仕事が出きるというなら、もう少し読んでみるのも良いかもしれない。
+Unix風システムでは、ghciは強力でカスタマイズできる GNU readline libraryを使っている。Windowsではghciの行編集機能はdoskey commandによるものである。
+
+<h2>Lists</h2>
+リストは角かっこでくくられている;要素はカンマで区切られている。
+
+ghci> [1, 2, 3]
+[1,2,3]
+
+<h3>カンマは区切りであり、終端ではない</h3>
+最後の要素に、カッコを閉じる前にカンマをつけることを許容する言語もあるが、Haskellは許容しない。最後にカンマをつけたままにすると(e.g, [1,2,])、解釈エラーparse errorとなる。。
+
+リストはどんな長さでも良い。空リストは[]と書かれる。
+
+ghci> []
+[]
+ghci> ["foo", "bar", "baz", "quux", "fnord", "xyzzy"]
+["foo","bar","baz","quux","fnord","xyzzy"]
+
+リストの要素は全て同じ型でなければならない。ここではこの規則を破る:このリストは2つのBool値で始まり、1つの文字列で終わる。
+
+ghci> [True, False, "testing"]
+
+<interactive>:1:14:
+    Couldn't match expected type `Bool' against inferred type `[Char]'
+      Expected type: Bool
+      Inferred type: [Char]
+    In the expression: "testing"
+    In the expression: [True, False, "testing"]
+
+もう一度、ghciのエラーメッセージは饒舌だが、単に文字列をBool値に変換できないと告げており、つまりこのリストの表現は正しい型付けではない。
+もし連続する要素を列記記法で書いたら、Haskellはそのリストの内容を埋めてくれる。
+
+ghci> [1..10]
+[1,2,3,4,5,6,7,8,9,10]
+
+ここで .. の文字は「列記」を意味している。その要素を列記できる型に対してのみこの記法を使うことができる。文字列には意味をなさず、例えば: ["foo".."quux"]の列記をするのに意味のある、一般的な方法はない。
+ところで上記の範囲記法は閉じた間隔を与えることに注意:リストは両端を含んでいる。
+列記を書く時、最初の2要素を与えることで選択的に刻みの大きさを定めることができる。2要素の後には列記の終点の値を書く。
+
+ghci> [1.0,1.25..2.0]
+[1.0,1.25,1.5,1.75,2.0]
+ghci> [1,4..15]
+[1,4,7,10,13]
+ghci> [10,9..1]
+[10,9,8,7,6,5,4,3,2,1]
+
+上記の後の例では、リストは極めて明らかに列記の終点を欠いている、なぜなら定めた数列の要素ではないからだ。
+列記の終点を省略することができる。もしある型が自然な「上限」を持たなければ、これは無限に値を作る。例えばもし[1..]とghciのプロンプトに書いた時には、大変大きな数が無限に続いて表示されるのを中断するか、ghciをkillしなければいけないだろう。もしやってみたければ、列記を止めるのにはCtrl-Cと入力しよう。この後でこの無限のリストがHaskellではよく使われることを知るだろう。
+
+<h3>Beware enumeration floating point numbers</h3>
+これは少々直感とは異なる振る舞い
+
+ghci> [1.0..1.8]
+[1.0,2.0]
+
+この場面の裏では、浮動小数点の丸め問題を避けるために、Haskellの実装は1.0から1.8+0.5までを列記している。
+浮動小数点数の列記記法を使うことはいくつかの驚きを伴うので、使う際には注意が必要である。浮動小数点の振る舞いは全てのプログラム言語で奇妙であり、Haskellだけのことではないのだ。
+
+<h2>Operation on lists</h2>
+リストの操作をするためによく使う演算子が2つある。2つのリストを結合するには(++)演算子を用いる。
+
+ghci> [3,1,3] ++ [3,7]
+[3,1,3,3,7]
+ghci> [] ++ [False,True] ++ [True]
+[False,True,True]
+
+より基本的なのは(:)演算子であり、あるリストの最初に一つの要素を付け加える。これは「cons」(「construct」の短縮形)と呼ばれる。
+
+ghci> 1 : [2,3]
+[1,2,3]
+ghci> 1 : []
+[1]
+
+あるリストの最後に要素を付け加えるのに[1,2]:3と書きたくなるかもしれないが、ghciはエラーメッセージを出して拒絶する、というのは(:)の最初の引数は一つの要素でなければならず、2つ目の引数は一つのリストでなければならないからだ。
+
+<h2>Strings and characters</h2>
+
+もしPerlやCのような言語を知っていれば、Haskellの文字列の記法は慣れたものだろう。文字列は二重引用符”で囲まれる。
+
+ghci> "This is a string."
+"This is a string."
+
+多くの言語でと同じく、読めない文字は「エスケープ」して表現する。Haskellのエスケープ文字と規則はC言語で確立された広く用いられている規約にしたがう。例えば '\n' は改行文字を表し、'\t'はタブ文字を表す。より詳細はAppendix B, Characters, strings, and escaping rulesを参照。
+
+ghci> putStrLn "Here's a newline -->\n<-- See?"
+Here's a newline -->
+<-- See?
+
+putStrLn関数は文字列を表示する。
+Haskellは文字と文字列を区別する。文字は一重引用符''で囲まれる。
+
+ghci> 'a'
+'a'
+
+実のところ、文字列はここの文字の単なるリストである。短い文字列の辛い書き方もあるが、ghciは我々の馴染みの形で返してくれる。
+
+ghci> let a = ['l', 'o', 't', 's', ' ', 'o', 'f', ' ', 'w', 'o', 'r', 'k']
+ghci> a
+"lots of work"
+ghci> a == "lots of work"
+True
+
+空の文字列は""と書かれ、[]と同じである。
+
+ghci> "" == []
+True
+
+文字列は文字のリストであるから、新しい文字列を作るのに標準的なリストの演算子を使うことができる。
+
+ghci> 'a':"bc"
+"abc"
+ghci> "foo" ++ "bar"
+"foobar"
+
+<h2>First steps with types</h2>
+
+既に型について少し話したが、ghciでのインタラクションではこれまでのところ型に関連した考え方はしてこなかった。ghciにどんな型を使ってきたかを告げなかったが、概ね我々の入力を受け入れてきた。
+Haskellは型の名前を大文字で始めることを要求し、変数名は小文字で始めなければならない。読み進める時にこのことを覚えておくと、名前を追跡するのが楽になる。
+型の世界を調べるのに最初にすることはghciにそれが何をしているかをもっと表示させることだ。ghciは:setという命令があり、それによりデフォルトの振る舞いを変えることができる。次のようにして型情報をもっと表示させられる。
+
+ghci> :set +t
+ghci> 'c'
+'c'
+it :: Char
+ghci> "foo"
+"foo"
+it :: [Char]
+
++tによりghciはある表現の後にその表現の型を表示するようになる。暗号めいたitは大変有用となりうる:それは実際に特別な変数の名前であり、そこにghciは評価された最後の表現の結果を入れる(これはHaskell言語の機能ではない;ghciのみの機能である)。ghciの出力の最後の行の意味を見ていこう。
+
+・特別な変数itについて表示されている
+・x::y の形式の文は「表現xは型yを持つ」と読める
+・ここでは表現itは[Char]の型を持つ。(Stringという名前は[Char]の代わりによく使われる。単純に[Char]の言い換えである)
+
+<h3>THe joy of it</h3>
+この変数itは手軽なghciのショートカットである。このおかげで評価したばかりの表現の結果を新しい表現の中で使うことができる。
+
+ghci> "foo"
+"foo"
+it :: [Char]
+ghci> it ++ "bar"
+"foobar"
+it :: [Char]
+
+ある表現を評価する時、評価が失敗した時にはghciはitの値を変えない。このために何らかの安全ネットを持った潜在的に偽の表現を書くことができる
+
+ghci> it
+"foobar"
+it :: [Char]
+ghci> it ++ 3
+
+<interactive>:1:6:
+    No instance for (Num [Char])
+      arising from the literal `3' at <interactive>:1:6
+    Possible fix: add an instance declaration for (Num [Char])
+    In the second argument of `(++)', namely `3'
+    In the expression: it ++ 3
+    In the definition of `it': it = it ++ 3
+ghci> it
+"foobar"
+it :: [Char]
+ghci> it ++ "baz"
+"foobarbaz"
+it :: [Char]
+
+itを前に入力した表現を呼び出し、編集するための矢印キーとあわせて使うことで、対話的に実験するためのきちんとした方法を手に入れられる:失敗の対価は非常に低い。この言語を探るために、どんどん簡単な沢山の間違いをしよう!
+
+ここでもう少しHaskellの型名を、これまで見た表現から示す。
+
+ghci> 7 ^ 80
+40536215597144386832065866109016673800875222251012083746192454448001
+it :: Integer
+
+Haskellの整数型はIntegerという名前である。Integerの値の大きさはシステムのメモリ容量のみに拘束される。
+有理数は整数とまったく同じには見えない。有理数を作るためには(%)演算子を用いる。分子は左で、分母は右である。
+
+ghci> :m +Data.Ratio
+ghci> 11 % 29
+11%29
+it :: Ratio Integer
+
+簡便のため、ghciは多くの命令を略記することができ、モジュールを読み込むため :module と書く代わりに :m と書くことができる。
+上記で::の右に2つの単語があることに注意。これを「IntegerのRatio」と読むことができる。Ratioは分子、分母ともIntegerの型の値が必要だろうと考えられる。もちろん、分子と分母が異なる型、または同じ非整数であるRatioを作ると、ghciは文句をいう。
+
+ghci> 3.14 % 8
+
+<interactive>:1:0:
+    Ambiguous type variable `t' in the constraints:
+      `Integral t' arising from a use of `%' at <interactive>:1:0-7
+      `Fractional t'
+        arising from the literal `3.14' at <interactive>:1:0-3
+    Probable fix: add a type signature that fixes these type variable(s)
+ghci> 1.2 % 3.4
+
+<interactive>:1:0:
+    Ambiguous type variable `t' in the constraints:
+      `Integral t' arising from a use of `%' at <interactive>:1:0-8
+      `Fractional t'
+        arising from the literal `3.4' at <interactive>:1:6-8
+    Probable fix: add a type signature that fixes these type variable(s)
+
+:set +tにより入力した全ての表現の型情報が得られるのは最初は有用だが、すぐに卒業する利便性である。少しすると、ある表現がどんな型を持つかをよく知るようになる。:unset命令を使って、いつでも追加の型情報を切ることができる。
+
+ghci> :unset +t
+ghci> 2
+2
+
+この利便性をやめても、他のghciの命令を使って必要な時に簡単に型情報を得られる。
+
+ghci> :type 'a'
+'a' :: Char
+ghci> "foo"
+"foo"
+ghci> :type it
+it :: [Char]
+
+:typeコマンドは与えたいかなる表現でもその型情報を表示する(上で見たようにitを含む)。それは実際には表現を評価しない;型を調べて表示するだけである。
+なぜこの2つの表現の型が違って表示されるのだろう?
+
+ghci> 3 + 2
+5
+ghci> :type it
+it :: Integer
+ghci> :type 3 + 2
+3 + 2 :: (Num t) => t
+
+Haskellには多くの数字型がある。例えば1のような表記された(リテラルな)数は、それが現れる文脈に応じて、整数でも浮動小数点数でもありうる。ghciに 3 + 2 という表現を評価させる時、型を選んで値を表示しなければいけない。デフォルトではIntegerである。2番目の例では、ghciに実際には評価をさせないでその表現の型を表示させている。そのためあまりはっきりさせられない。頑張って、「その型は数字です」と答える。第6章 Using TYpeclasses で、この型記法について更に示す。
+
 
