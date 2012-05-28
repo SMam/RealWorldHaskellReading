@@ -522,4 +522,70 @@ ghci> :type 3 + 2
 
 Haskellには多くの数字型がある。例えば1のような表記された(リテラルな)数は、それが現れる文脈に応じて、整数でも浮動小数点数でもありうる。ghciに 3 + 2 という表現を評価させる時、型を選んで値を表示しなければいけない。デフォルトではIntegerである。2番目の例では、ghciに実際には評価をさせないでその表現の型を表示させている。そのためあまりはっきりさせられない。頑張って、「その型は数字です」と答える。第6章 Using TYpeclasses で、この型記法について更に示す。
 
+<h2>A simple program</h2>
 
+ちょっと前へ飛んで、入力された行数を数える小さなプログラムを書いてみよう。まだ理解しようとしなくていい;手を汚して楽しもう。テキストエディタで以下のコードを入力し、WC.hsとして保存しよう。
+
+-- file: ch01/WC.hs
+-- lines beginning with "--" are comments.
+
+main = interact wordCount
+    where wordCount input = show (length (lines input)) ++ "\n"
+
+テキストファイルを見つけるか作るかしよう;quux.txtとしよう。
+
+$ cat quux.txt
+Teignmouth, England
+Paris, France
+Ulm, Germany
+Auxerre, France
+Brunswick, Germany
+Beaumont-en-Auge, France
+Ryazan, Russia
+
+シェルかコマンドプロンプトから以下のコマンドを走らせる。
+
+$ runghc WC < quux.txt
+7
+
+実世界と相互作用する簡単なプログラムを無事書いた! この後の章では、引き続き自分自身でプログラムが書けるまで理解の溝を埋めていこう。
+
+<h2>Excercises</h2>
+
+1. 以下の表現をghciに入力しよう。その型は何か?
+
+5 + 8
+
+3 * 5 + 8
+
+2 + 4
+
+(+) 2 4
+
+sqrt 16
+
+succ 6
+
+succ 7
+
+pred 9
+
+pred 8
+
+sin (pi / 2)
+
+truncate pi
+
+round 3.5
+
+round 3.4
+
+floor 3.7
+
+ceiling 3.3
+
+2. ghciから:?と打つといくつかヘルプが表示される。変数を定義し、たとえば let x = 1、それから :show bindings と入力しよう。何が起こるか?
+
+3. 関数wordは文字列内の単語数を数える。ファイル中の単語数を数えるように WC.hsを修正せよ。
+
+4. 再度 WC.hsを修正し、ファイル中の文字数を表示せよ。
